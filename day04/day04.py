@@ -13,69 +13,39 @@ def solve1(lines):
             found += len(re.findall("SAMX", line))
         return found
 
-    def get_diagonal_with_offset(matrix, offset=0):
-        rows = len(matrix)
-        cols = len(matrix[0])
-        diagonal = []
-        start_row = max(0, -offset)
-        start_col = max(0, offset)
+    def get_diagonals(lines):
+        lines_diag = []
+        max_col, max_row = len(lines[0]), len(lines)
+        row = col = 0
+        for _ in range(max_row + max_col - 1):
+            y, x = row, col
+            d = ""
+            while y >= 0 and x < max_col:
+                d += lines[y][x]
+                y -= 1
+                x += 1
+            lines_diag.append(d)
 
-        row, col = start_row, start_col
-        while row < rows and col < cols:
-            diagonal.append(matrix[row][col])
-            row += 1
-            col += 1
-        return "".join(diagonal)
+            if row + 1 < max_row:
+                row += 1
+            else:
+                col += 1
+        return lines_diag
 
     res = 0
     # horizontal
-    found = count_xmasamx(lines)
-    res += found
+    res+= count_xmasamx(lines)
     # vertical
     lines_rotated = ["".join(c) for c in zip(*lines)]
-    found = count_xmasamx(lines_rotated)
-    res += found
+    res += count_xmasamx(lines_rotated)
 
     # diagonal left right
-    lines_diag1 = []
-    max_col, max_row = len(lines[0]), len(lines)
-    row = col = 0
-    for _ in range(max_row + max_col - 1):
-        y, x = row, col
-        d = ""
-        while y >= 0 and x < max_col:
-            d += lines[y][x]
-            y -= 1
-            x += 1
-        lines_diag1.append(d)
-
-        if row + 1 < max_row:
-            row += 1
-        else:
-            col += 1
-    found = count_xmasamx(lines_diag1)
-    res += found
+    res += count_xmasamx(get_diagonals(lines))
 
     # diagonal right left
     lines_rev = ["".join(line[::-1]) for line in lines]
-    lines_diag2 = []
-    row = col = 0
-    for _ in range(max_row + max_col - 1):
-        y, x = row, col
-        d = ""
-        while y >= 0 and x < max_col:
-            d += lines_rev[y][x]
-            y -= 1
-            x += 1
-        lines_diag2.append(d)
-
-        if row + 1 < max_row:
-            row += 1
-        else:
-            col += 1
-    found = count_xmasamx(lines_diag2)
-    res += found
-
+    res += count_xmasamx(get_diagonals(lines_rev))
+ 
     return res
 
 
