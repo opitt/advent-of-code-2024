@@ -1,6 +1,5 @@
 # https://adventofcode.com/2024/day/4
 import os
-from pyexpat.errors import XML_ERROR_ASYNC_ENTITY
 import re
 
 
@@ -33,8 +32,10 @@ def solve1(lines):
         return lines_diag
 
     res = 0
+    
     # horizontal
     res+= count_xmasamx(lines)
+    
     # vertical
     lines_rotated = ["".join(c) for c in zip(*lines)]
     res += count_xmasamx(lines_rotated)
@@ -51,6 +52,12 @@ def solve1(lines):
 
 def solve2(lines):
     res = 0
+    for row in range(len(lines)-2):
+        for col in range(len(lines[0])-2):
+            x1 = lines[row][col] + lines[row + 1][col + 1] + lines[row + 2][col + 2]
+            x2 = lines[row + 2][col] + lines[row + 1][col + 1] + lines[row][col + 2]
+            if x1 in ("MAS","SAM") and x2 in ("MAS","SAM"):
+                res+=1
     return res
 
 
@@ -63,13 +70,13 @@ def main(test):
         lines = input.readlines()
     lines = list(map(str.strip, lines))
 
-    result1, result2 = solve1(lines), solve2(lines)
+    result1 = solve1(lines)
+    result2 = solve2(lines)
     print(
         f"The result for part 1 is {result1}",
         f"The result for part 2 is {result2}",
         sep="\n",
     )
-    # 166905464,72948684
 
 print("Test")
 main(test=True)
