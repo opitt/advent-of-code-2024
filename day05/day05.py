@@ -4,32 +4,36 @@ import re
 
 
 def solve1(page_updates, pages_before, pages_after):
-    # 75,47,61,53,29
-    wrong_updates = []
-    res = 0
-    for pages in page_updates:
-        for pos, page in enumerate(pages):
-            for i in range(len(pages)):
-                if i == pos:
-                    continue
+    def validate_pages(pages):
+        # 75,47,61,53,29
+        ok = True
+        pos = 0
+        while ok and pos < len(pages):
+            page = pages[pos]
+            i=0
+            while ok and i < len(pages):
                 if i < pos:
                     try:
                         ok = pages[i] in pages_after[page]
                     except:
                         ok = False
-                else:
+                elif i > pos:
                     try:
                         ok = pages[i] in pages_before[page]
                     except:
                         ok = False
-                if not ok:
-                    break
-            if not ok:
-                break
+                i+=1
+            pos+=1
+        return ok, page
+
+    wrong_updates = []
+    res = 0
+    for pages in page_updates:
+        ok,wrong_page = validate_pages(pages)
         if ok:
-            res += int(pages[len(pages)//2])
+            res += int(pages[len(pages) // 2])
         else:
-            wrong_updates.append(pages)
+            wrong_updates.append([pages, wrong_page])
     ## fix the wrong updates (puzzle 2)
     return res
 
