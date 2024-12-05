@@ -3,61 +3,39 @@ import os
 import re
 
 
-def solve1(lines):
-
-    def count_xmasamx(lines):
-        found = 0
-        for line in lines:
-            found += len(re.findall("XMAS", line))
-            found += len(re.findall("SAMX", line))
-        return found
-
-    def get_diagonals(lines):
-        lines_diag = []
-        max_col, max_row = len(lines[0]), len(lines)
-        row = col = 0
-        for _ in range(max_row + max_col - 1):
-            y, x = row, col
-            d = ""
-            while y >= 0 and x < max_col:
-                d += lines[y][x]
-                y -= 1
-                x += 1
-            lines_diag.append(d)
-
-            if row + 1 < max_row:
-                row += 1
-            else:
-                col += 1
-        return lines_diag
-
+def solve1(page_updates, pages_before, pages_after):
+    # 75,47,61,53,29
+    wrong_updates = []
     res = 0
-    
-    # horizontal
-    res+= count_xmasamx(lines)
-    
-    # vertical
-    lines_rotated = ["".join(c) for c in zip(*lines)]
-    res += count_xmasamx(lines_rotated)
-
-    # diagonal left right
-    res += count_xmasamx(get_diagonals(lines))
-
-    # diagonal right left
-    lines_rev = ["".join(line[::-1]) for line in lines]
-    res += count_xmasamx(get_diagonals(lines_rev))
- 
+    for pages in page_updates:
+        for pos, page in enumerate(pages):
+            for i in range(len(pages)):
+                if i == pos:
+                    continue
+                if i < pos:
+                    try:
+                        ok = pages[i] in pages_after[page]
+                    except:
+                        ok = False
+                else:
+                    try:
+                        ok = pages[i] in pages_before[page]
+                    except:
+                        ok = False
+                if not ok:
+                    break
+            if not ok:
+                break
+        if ok:
+            res += int(pages[len(pages)//2])
+        else:
+            wrong_updates.append(pages)
+    ## fix the wrong updates (puzzle 2)
     return res
 
 
 def solve2(lines):
     res = 0
-    for row in range(len(lines)-2):
-        for col in range(len(lines[0])-2):
-            x1 = lines[row][col] + lines[row + 1][col + 1] + lines[row + 2][col + 2]
-            x2 = lines[row + 2][col] + lines[row + 1][col + 1] + lines[row][col + 2]
-            if x1 in ("MAS","SAM") and x2 in ("MAS","SAM"):
-                res+=1
     return res
 
 
@@ -70,12 +48,12 @@ def main(test):
         lines = input.readlines()
     lines = list(map(str.strip, lines))
 
-    pages=[]
-    rules=[]
-    read_pages=False
+    pages = []
+    rules = []
+    read_pages = False
     for line in lines:
-        if line=="":
-            read_pages=True
+        if line == "":
+            read_pages = True
             continue
         if read_pages:
             pages.append(line)
@@ -83,9 +61,9 @@ def main(test):
             rules.append(line)
 
     rule_before = {}
-    rule_after  = {}
+    rule_after = {}
     for r in rules:
-        p1,p2 = r.split("|")
+        p1, p2 = r.split("|")
         if p1 not in rule_before:
             rule_before[p1] = [p2]
         else:
@@ -94,14 +72,15 @@ def main(test):
             rule_after[p2] = [p1]
         else:
             rule_after[p2].append(p1)
-        
-    result1 = solve1(pages,rule_before, rule_after)
-    result2 = 0# solve2(lines)
+    (*pages,) = (line.split(",") for line in pages)
+    result1 = solve1(pages, rule_before, rule_after)
+    result2 = 0  # solve2(lines)
     print(
         f"The result for part 1 is {result1}",
         f"The result for part 2 is {result2}",
         sep="\n",
     )
+
 
 print("Test")
 main(test=True)
