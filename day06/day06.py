@@ -1,44 +1,45 @@
 # https://adventofcode.com/2024/day/6
+from collections import namedtuple
 from copy import deepcopy
 import os
 import itertools as it
 
+Point = namedtuple("Point",["y","x"])
 
 def solve1(maze):
-    max_x = len(maze[0])
-    max_y = len(maze)
 
+    # find the staring position
     for y, line in enumerate(maze):
         try:
-            x = line.index("^")
-            pos_y = y
-            pos_x = x
+            guard=Point(y = y,x=line.index("^"))
             break
         except:
             pass
 
     visited = []
-
-    DIR = {"^": (-1, 0), ">": (0, 1), "v": (1, 0), "<": (0, -1)}
-    DIRS = it.cycle("^>v<")
-    dir = next(DIRS)
+    #DIR = {"^": (-1, 0), ">": (0, 1), "v": (1, 0), "<": (0, -1)}
+    #DIRS = it.cycle("^>v<")
+    DIR = {"^":(-1, 0), ">":(0, 1), "v":(1, 0), "<":(0, -1)}
+    NEXT_DIR = {"^":">",">":"v","v":"<","<":"^"}
+    is_inside=lambda p: p.y >= 0 and p.y <= len(maze)-1 and p.x >= 0 and p.x <= len(maze[0])-1
+    
+    dir = "^"
     dy, dx = DIR[dir]
     while True:
-        visited.append((pos_y, pos_x, dir))
-        if (
-            pos_y + dy < 0
-            or pos_y + dy >= max_y
-            or pos_x + dx < 0
-            or pos_x + dx >= max_x
-        ):
+        visited.append((guard, dir))
+        new_pos = Point(y=guard.y+dy, x=guard.x+dx)
+        if not is_inside(new_pos):
+            # guard steped outside
             break
-        if maze[pos_y + dy][pos_x + dx] == "#":
-            dir = next(DIRS)
-            visited.append((pos_y, pos_x, dir))
+
+        if maze[new_pos.y][new_pos.x] == "#":
+            dir = NEXT_DIR[dir]
+            visited.append((guard, dir))
             dy, dx = DIR[dir]
-        pos_y += dy
-        pos_x += dx
-    res = len(set((y, x) for y, x, _ in visited))
+            new_pos = Point(y=guard.y + dy, x=guard.x + dx)
+        guard = new_pos
+
+    res = len(set(p for p, _ in visited))
     return res
 
 
