@@ -4,11 +4,26 @@ import re
 import os
 import itertools as it
 from collections import namedtuple
+import time
 
 # Define a namedtuple type
 Point = namedtuple("Point", ["y", "x"])
 
+def execution_time_decorator(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()  # Record the start time
+        result = func(*args, **kwargs)  # Execute the function
+        end_time = time.time()  # Record the end time
+        execution_time = end_time - start_time  # Calculate the execution time
+        # print(f"Execution time of {func.__name__}: {execution_time:.6f} seconds")
+        print(f"Execution time: {execution_time:.4f} seconds")
+        print(f"Execution time: {execution_time*1_000_000:.2f} microseconds")
+        return result
 
+    return wrapper
+
+
+@execution_time_decorator
 def solve(city, antennas):
     antinodes = set()
     is_inside = (
@@ -32,6 +47,7 @@ def solve(city, antennas):
     return len(antinodes)
 
 
+@execution_time_decorator
 def solve2(city, antennas):
     antinodes = set()
     is_inside = (
@@ -45,12 +61,12 @@ def solve2(city, antennas):
         for loc1, loc2 in in_line_locations:
             dy, dx = loc1.y - loc2.y, loc1.x - loc2.x
 
-            anti=loc1
+            anti = loc1
             while is_inside(anti):
                 antinodes.add(anti)
                 anti = Point(y=anti.y + dy, x=anti.x + dx)
 
-            anti=loc2
+            anti = loc2
             while is_inside(anti):
                 antinodes.add(anti)
                 anti = Point(y=anti.y - dy, x=anti.x - dx)
@@ -71,7 +87,9 @@ def main(test):
     antennas = {}
     for y, street in enumerate(city):
         # Find all matches and their positions
-        matches = [(match.group(), match.start()) for match in re.finditer("[^.]", street)]
+        matches = [
+            (match.group(), match.start()) for match in re.finditer("[^.]", street)
+        ]
         for char, x in matches:
             p = Point(y=y, x=x)
             if char in antennas:
@@ -79,19 +97,17 @@ def main(test):
             else:
                 antennas[char] = [p]
 
-    result1 = solve(deepcopy(city),antennas)
+    print("PART 1")
+    result = solve(deepcopy(city), antennas)
+    print(f"The result is {result}")
 
+    print("PART 2")
     result2 = solve2(deepcopy(city), antennas)
-
-    print(
-        f"The result for part 1 is {result1}",
-        f"The result for part 2 is {result2}",
-        sep="\n",
-    )
+    print(f"The result is {result}")
 
 
-print("Test")
+print("####### TEST ###############################")
 main(test=True)
-
-print("Real")
+print()
+print("####### REAL ###############################")
 main(test=False)
