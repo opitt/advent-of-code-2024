@@ -1,33 +1,66 @@
 # https://adventofcode.com/2024/day/8
-
 from copy import deepcopy
-import os
 import re
+import os
 import itertools as it
 from collections import namedtuple
 
 # Define a namedtuple type
 Point = namedtuple("Point", ["y", "x"])
 
-def solve(city,antennas):
-    antinodes=[]
-    max_y=len(city)-1
-    max_x=len(city[0])-1
+
+def solve(city, antennas):
+    antinodes = []
+    max_y = len(city) - 1
+    max_x = len(city[0]) - 1
 
     for frequency, locations in antennas.items():
-        in_line_locations = list(it.combinations(locations,2))
+        in_line_locations = list(it.combinations(locations, 2))
         for loc1, loc2 in in_line_locations:
-            dy = loc1.y-loc2.y
-            dx = loc1.x-loc2.x
+            dy = loc1.y - loc2.y
+            dx = loc1.x - loc2.x
             anti1 = Point(y=loc1.y + dy, x=loc1.x + dx)
             anti2 = Point(y=loc2.y - dy, x=loc2.x - dx)
 
-            is_valid = lambda loc: loc.x>=0 and loc.x<=max_x and loc.y>=0 and loc.y<=max_y and loc not in antinodes
+            is_valid = (
+                lambda loc: loc.x >= 0
+                and loc.x <= max_x
+                and loc.y >= 0
+                and loc.y <= max_y
+                and loc not in antinodes
+            )
             for anti in [anti1, anti2]:
                 if is_valid(anti):
                     antinodes.append(anti)
 
     return len(antinodes)
+
+
+def solve2(city, antennas):
+    antinodes = set()
+    is_inside = (
+        lambda loc: loc.x >= 0
+        and loc.x <= len(city[0]) - 1
+        and loc.y >= 0
+        and loc.y <= len(city) - 1
+    )
+    for antenna_locations in antennas.values():
+        in_line_locations = list(it.combinations(antenna_locations, 2))
+        for loc1, loc2 in in_line_locations:
+            dy, dx = loc1.y - loc2.y, loc1.x - loc2.x
+
+            anti=loc1
+            while is_inside(anti):
+                antinodes.add(anti)
+                anti = Point(y=anti.y + dy, x=anti.x + dx)
+
+            anti=loc2
+            while is_inside(anti):
+                antinodes.add(anti)
+                anti = Point(y=anti.y - dy, x=anti.x - dx)
+
+    return len(antinodes)
+
 
 def main(test):
     # READ INPUT FILE
@@ -52,7 +85,7 @@ def main(test):
 
     result1 = solve(deepcopy(city),antennas)
 
-    result2 = solve(deepcopy(city), antennas)
+    result2 = solve2(deepcopy(city), antennas)
 
     print(
         f"The result for part 1 is {result1}",
