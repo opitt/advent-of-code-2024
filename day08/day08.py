@@ -10,11 +10,14 @@ Point = namedtuple("Point", ["y", "x"])
 
 
 def solve(city, antennas):
-    antinodes = []
-    max_y = len(city) - 1
-    max_x = len(city[0]) - 1
-
-    for frequency, locations in antennas.items():
+    antinodes = set()
+    is_inside = (
+        lambda loc: loc.x >= 0
+        and loc.x <= len(city[0]) - 1
+        and loc.y >= 0
+        and loc.y <= len(city) - 1
+    )
+    for locations in antennas.values():
         in_line_locations = list(it.combinations(locations, 2))
         for loc1, loc2 in in_line_locations:
             dy = loc1.y - loc2.y
@@ -22,16 +25,9 @@ def solve(city, antennas):
             anti1 = Point(y=loc1.y + dy, x=loc1.x + dx)
             anti2 = Point(y=loc2.y - dy, x=loc2.x - dx)
 
-            is_valid = (
-                lambda loc: loc.x >= 0
-                and loc.x <= max_x
-                and loc.y >= 0
-                and loc.y <= max_y
-                and loc not in antinodes
-            )
             for anti in [anti1, anti2]:
-                if is_valid(anti):
-                    antinodes.append(anti)
+                if is_inside(anti):
+                    antinodes.add(anti)
 
     return len(antinodes)
 
