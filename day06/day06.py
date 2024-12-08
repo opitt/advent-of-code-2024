@@ -17,12 +17,10 @@ def solve1(maze):
             pass
 
     visited = []
-    #DIR = {"^": (-1, 0), ">": (0, 1), "v": (1, 0), "<": (0, -1)}
-    #DIRS = it.cycle("^>v<")
     DIR = {"^":(-1, 0), ">":(0, 1), "v":(1, 0), "<":(0, -1)}
     NEXT_DIR = {"^":">",">":"v","v":"<","<":"^"}
     is_inside=lambda p: p.y >= 0 and p.y <= len(maze)-1 and p.x >= 0 and p.x <= len(maze[0])-1
-    
+
     dir = "^"
     dy, dx = DIR[dir]
     while True:
@@ -44,52 +42,42 @@ def solve1(maze):
 
 
 def solve2(maze):
-    max_x = len(maze[0])
-    max_y = len(maze)
-    res=0
+
+    # find the staring position
     for y, line in enumerate(maze):
         try:
-            x = line.index("^")
-            pos_y = y
-            pos_x = x
+            guard = Point(y=y, x=line.index("^"))
             break
         except:
             pass
 
     visited = []
-
-    DIR = {"^":(-1, 0), ">":(0, 1), "v":(1, 0), "<":(0, -1)}
-    NEXT_DIR = {"^":">",">":"v","v":"<","<":"^"}
+    DIR = {"^": (-1, 0), ">": (0, 1), "v": (1, 0), "<": (0, -1)}
+    NEXT_DIR = {"^": ">", ">": "v", "v": "<", "<": "^"}
+    is_inside = (
+        lambda p: p.y >= 0
+        and p.y <= len(maze) - 1
+        and p.x >= 0
+        and p.x <= len(maze[0]) - 1
+    )
 
     dir = "^"
-    dy,dx=DIR[dir]
+    dy, dx = DIR[dir]
     while True:
-        visited.append((pos_y,pos_x,dir))
-        if (
-            pos_y + dy < 0
-            or pos_y + dy >= max_y
-            or pos_x + dx < 0
-            or pos_x + dx >= max_x
-        ):
+        visited.append((guard, dir))
+        new_pos = Point(y=guard.y + dy, x=guard.x + dx)
+        if not is_inside(new_pos):
+            # guard steped outside
             break
 
-        if maze[pos_y + dy][pos_x + dx] == "#":
+        if maze[new_pos.y][new_pos.x] == "#":
             dir = NEXT_DIR[dir]
-            visited.append((pos_y,pos_x,dir))
-            dy,dx=DIR[dir]
-        else:
-            what_if_dir = NEXT_DIR[dir]
-            what_if_dy, what_if_dx = DIR[what_if_dir]
-            if (
-                pos_y + what_if_dy,
-                pos_x + what_if_dx,
-                what_if_dir,
-            ) in visited:  # loop opportunity
-                res += 1
+            visited.append((guard, dir))
+            dy, dx = DIR[dir]
+            new_pos = Point(y=guard.y + dy, x=guard.x + dx)
+        guard = new_pos
 
-        pos_y += dy
-        pos_x += dx
-
+    res = len(set(p for p, _ in visited))
     return res
 
 
